@@ -12,6 +12,7 @@ class UCameraComponent;
 class AFPSProjectile;
 class USoundBase;
 class UAnimSequence;
+class UPawnNoiseEmitterComponent;
 
 
 UCLASS()
@@ -38,18 +39,20 @@ public:
 
 	/** Projectile class to spawn */
 	UPROPERTY(EditDefaultsOnly, Category="Projectile")
-	TSubclassOf<AFPSProjectile> ProjectileClass;
+		TSubclassOf<AFPSProjectile> ProjectileClass;
 
 	/** Sound to play each time we fire */
 	UPROPERTY(EditDefaultsOnly, Category="Gameplay")
-	USoundBase* FireSound;
+		USoundBase* FireSound;
 
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	UAnimSequence* FireAnimation;
+		UAnimSequence* FireAnimation;
 
 	UPROPERTY(BlueprintReadOnly,Category = "Gameplay")
-	bool bIsCarryingObjetive;
+		bool bIsCarryingObjetive;
+	UPROPERTY(BlueprintReadOnly, Category = "Noise")
+		UPawnNoiseEmitterComponent*	NoiseEmitterComp;
 
 protected:
 	
