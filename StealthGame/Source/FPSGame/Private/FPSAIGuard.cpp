@@ -4,6 +4,7 @@
 #include "Perception/PawnSensingComponent.h"
 #include "DrawDebugHelpers.h"
 #include "TimerManager.h"
+#include "FPSGameMode.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -24,6 +25,7 @@ void AFPSAIGuard::BeginPlay()
 	//binding
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHeard);
+	GuardState = EAIState::Idle;
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
@@ -32,11 +34,25 @@ void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
 	{
 		return;
 	}
-	DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Cyan, false, 10.0f);
+	if(GuardState == EAIState::Alerted)
+	{
+		return;
+	}
+	SetGuardState(EAIState::Alerted);
+	// declaramos el juego perdido.
+	AFPSGameMode* GM = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
+	if (GM)
+	{
+		GM->MissionComplete(SeenPawn, false);
+	}
 }
 
 void AFPSAIGuard::OnNoiseHeard(APawn * NoiseInstigator, const FVector& Location, float Volume)
 {
+	if( GuardState == EAIState::Alerted)
+	{
+		return;
+	}
 		DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Green, false, 10.0f);
 		// Con esto mejoramos el lookAtRotation de blueprints
 		FVector Direction = Location - GetActorLocation();
@@ -47,11 +63,23 @@ void AFPSAIGuard::OnNoiseHeard(APawn * NoiseInstigator, const FVector& Location,
 		SetActorRotation(NewLookAt);
 		GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
 		GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation,3.0f);
+		SetGuardState(EAIState::Suspicious);
 }
 
 void AFPSAIGuard::ResetOrientation()
 {
 	SetActorRotation(OriginalRotation);
+	SetGuardState(EAIState::Idle);
+}
+
+void AFPSAIGuard::SetGuardState(EAIState NewState)
+{
+	if (GuardState == NewState)
+	{
+		return;
+	}
+	GuardState = NewState;
+	OnStateChanged(NewState);
 }
 
 // Called every frame

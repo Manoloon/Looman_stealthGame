@@ -15,11 +15,11 @@ public:
 	AFPSGameMode();
 
 	// mision complete
-	void MissionComplete(APawn* InstigatorPawn);
+	void MissionComplete(APawn* InstigatorPawn, bool bMissionSuccess);
 	
 	// this function could be see on blueprints
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
-	void OnMissionCompleted(APawn* InstigatorPawn);
+		void OnMissionCompleted(APawn* InstigatorPawn, bool bMissionSuccess);
 protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Spectator")
 		TSubclassOf<AActor>SpectatorViewpointClass;

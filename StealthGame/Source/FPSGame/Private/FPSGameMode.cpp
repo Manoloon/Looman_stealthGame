@@ -16,7 +16,7 @@ AFPSGameMode::AFPSGameMode()
 	HUDClass = AFPSHUD::StaticClass();
 }
 
-void AFPSGameMode::MissionComplete(APawn* InstigatorPawn)
+void AFPSGameMode::MissionComplete(APawn* InstigatorPawn, bool bMissionSuccess)
 {
 	// disable moving of character
 	if (InstigatorPawn)
@@ -39,5 +39,5 @@ void AFPSGameMode::MissionComplete(APawn* InstigatorPawn)
 			}
 		}
 	}
-	OnMissionCompleted(InstigatorPawn);
+	OnMissionCompleted(InstigatorPawn, bMissionSuccess);
 }
