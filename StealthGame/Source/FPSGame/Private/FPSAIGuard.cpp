@@ -5,6 +5,8 @@
 #include "DrawDebugHelpers.h"
 #include "TimerManager.h"
 #include "FPSGameMode.h"
+#include "Net/UnrealNetwork.h"
+#include "AI/Navigation/NavigationSystem.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -12,8 +14,7 @@ AFPSAIGuard::AFPSAIGuard()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
-	
+	PawnSensingComp = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));	
 }
 
 // Called when the game starts or when spawned
@@ -25,7 +26,27 @@ void AFPSAIGuard::BeginPlay()
 	//binding
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnNoiseHeard);
+	if (bPatrolOn)
+	{	
+		MoveToNextPatrolPoint();
+	}
+	else
+	{
 	GuardState = EAIState::Idle;
+	}
+}
+
+void AFPSAIGuard::MoveToNextPatrolPoint()
+{
+	if(CurrentPatrolPoint == nullptr ||CurrentPatrolPoint == PatrolPoint1)
+	{
+		CurrentPatrolPoint = PatrolPoint2;
+	}
+	else 
+	{
+		CurrentPatrolPoint = PatrolPoint1;
+	}
+	UNavigationSystem::SimpleMoveToActor(GetController(),CurrentPatrolPoint);
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
@@ -39,6 +60,11 @@ void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
 		return;
 	}
 	SetGuardState(EAIState::Alerted);
+	// patrolling stop
+	if(bPatrolOn)
+	{
+		Controller->StopMovement();
+	}
 	// declaramos el juego perdido.
 	AFPSGameMode* GM = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
 	if (GM)
@@ -64,12 +90,25 @@ void AFPSAIGuard::OnNoiseHeard(APawn * NoiseInstigator, const FVector& Location,
 		GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
 		GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation,3.0f);
 		SetGuardState(EAIState::Suspicious);
+		// patrolling stop
+		if (bPatrolOn)
+		{
+			Controller->StopMovement();
+		}
 }
 
 void AFPSAIGuard::ResetOrientation()
 {
 	SetActorRotation(OriginalRotation);
+	// patrol state
+	if (bPatrolOn)
+	{
+		MoveToNextPatrolPoint();
+	}
+	else
+	{
 	SetGuardState(EAIState::Idle);
+	}
 }
 
 void AFPSAIGuard::SetGuardState(EAIState NewState)
@@ -87,5 +126,15 @@ void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (CurrentPatrolPoint)
+	{
+		FVector Delta = GetActorLocation() - CurrentPatrolPoint->GetActorLocation();
+		float DistanceToGoal = Delta.Size();
+		if(DistanceToGoal<50)
+		{
+			MoveToNextPatrolPoint();
+		}
+	}
 }
+
 

@@ -31,6 +31,18 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "Component")
 		UPawnSensingComponent* PawnSensingComp;
+	
+	// Challenge 3
+	UPROPERTY(EditInstanceOnly, Category = "Route", meta = (EditCondition = "bPatrolOn"))
+		AActor* PatrolPoint1;
+	UPROPERTY(EditInstanceOnly, Category = "Route", meta = (EditCondition = "bPatrolOn"))
+		AActor* PatrolPoint2;
+	UPROPERTY(EditInstanceOnly, Category = "AI")
+		bool bPatrolOn;
+	// aca se setea el punto en el que estoy.
+	AActor* CurrentPatrolPoint;
+
+	void MoveToNextPatrolPoint();
 
 	FRotator OriginalRotation;
 	FTimerHandle  TimerHandle_ResetOrientation;
