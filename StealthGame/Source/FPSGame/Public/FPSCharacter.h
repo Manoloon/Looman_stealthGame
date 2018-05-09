@@ -34,6 +34,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComponent;	
 
+	UFUNCTION(Server, Reliable, WithValidation)
+		void ServerFire();
+
 public:
 	AFPSCharacter();
 
@@ -49,7 +52,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
 		UAnimSequence* FireAnimation;
 
-	UPROPERTY(BlueprintReadOnly,Category = "Gameplay")
+	UPROPERTY(Replicated, BlueprintReadOnly,Category = "Gameplay")
 		bool bIsCarryingObjetive;
 	UPROPERTY(BlueprintReadOnly, Category = "Noise")
 		UPawnNoiseEmitterComponent*	NoiseEmitterComp;
@@ -68,6 +71,9 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 
 public:
+	//tick
+	virtual void Tick(float DeltaTime) override;
+
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1PComponent; }
 

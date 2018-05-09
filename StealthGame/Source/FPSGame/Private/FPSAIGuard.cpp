@@ -7,6 +7,7 @@
 #include "FPSGameMode.h"
 #include "Net/UnrealNetwork.h"
 #include "AI/Navigation/NavigationSystem.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -118,7 +119,20 @@ void AFPSAIGuard::SetGuardState(EAIState NewState)
 		return;
 	}
 	GuardState = NewState;
-	OnStateChanged(NewState);
+	OnRep_GuardState();
+}
+
+// esto se usa para replicar y sincronizar la variable GUARDSTATE
+void AFPSAIGuard::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSAIGuard, GuardState);
+}
+
+void AFPSAIGuard::OnRep_GuardState()
+{
+	OnStateChanged(GuardState);
 }
 
 // Called every frame

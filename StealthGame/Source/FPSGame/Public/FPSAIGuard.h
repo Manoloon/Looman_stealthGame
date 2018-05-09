@@ -53,8 +53,13 @@ protected:
 		void OnNoiseHeard(APawn* NoiseInstigator, const FVector& Location, float Volume);
 	UFUNCTION()
 		void ResetOrientation();
-	
-	EAIState GuardState;
+
+	// this is for networking replication
+	UPROPERTY(ReplicatedUsing=OnRep_GuardState)
+		EAIState GuardState;
+
+	UFUNCTION()
+		void OnRep_GuardState();
 
 	void SetGuardState(EAIState NewState);
 
